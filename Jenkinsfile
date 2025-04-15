@@ -3,7 +3,8 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'flask-app'
-        DOCKER_REGISTRY = 'sankalppp2'  // Or your private registry if you have one
+        DOCKER_REGISTRY = 'sankalppp2'
+        FULL_IMAGE_NAME = "${DOCKER_REGISTRY}/${DOCKER_IMAGE}"
     }
 
     stages {
@@ -16,7 +17,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    docker.build(DOCKER_IMAGE)
+                    docker.build(FULL_IMAGE_NAME)
                 }
             }
         }
@@ -25,7 +26,7 @@ pipeline {
             steps {
                 script {
                     docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-credentials') {
-                        docker.image(DOCKER_IMAGE).push()
+                        docker.image(FULL_IMAGE_NAME).push()
                     }
                 }
             }
@@ -34,8 +35,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Add deployment commands here if you're deploying to a server or cloud
-                    sh 'docker run -d -p 5000:5000 flask-app'
+                    sh "docker run -d -p 5000:5000 ${FULL_IMAGE_NAME}"
                 }
             }
         }
