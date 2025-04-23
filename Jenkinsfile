@@ -35,9 +35,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop and remove any existing container named flask-app
                     sh """
-                        CONTAINER_ID=\$(docker ps -q --filter 'name=flask-app')
+                        CONTAINER_ID=\$(docker ps -q --filter "publish=5000")
                         if [ -n "\$CONTAINER_ID" ]; then
                             docker stop \$CONTAINER_ID
                             docker rm \$CONTAINER_ID
