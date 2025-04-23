@@ -35,14 +35,22 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
+                    // Stop and remove any container using port 5000
                     sh """
-                        CONTAINER_ID=\$(docker ps -q --filter "publish=5000")
+                        PORT_IN_USE=\$(docker ps --filter 'publish=5000' -q)
+                        if [ -n "\$PORT_IN_USE" ]; then
+                            docker stop \$PORT_IN_USE || true
+                            docker rm \$PORT_IN_USE || true
+                        fi
+
+                        # Also ensure named container flask-app is removed
+                        CONTAINER_ID=\$(docker ps -aq --filter 'name=^/flask-app\$')
                         if [ -n "\$CONTAINER_ID" ]; then
-                            docker stop \$CONTAINER_ID
-                            docker rm \$CONTAINER_ID
+                            docker stop \$CONTAINER_ID || true
+                            docker rm \$CONTAINER_ID || true
                         fi
                     """
-                    // Run the new container with a name
+                    // Run the new container
                     sh "docker run -d -p 5000:5000 --name flask-app ${FULL_IMAGE_NAME}"
                 }
             }
