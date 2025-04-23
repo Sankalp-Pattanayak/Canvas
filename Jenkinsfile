@@ -35,7 +35,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    // Stop and remove any existing container running on the same port
+                    // Stop and remove any existing container named flask-app
                     sh """
                         CONTAINER_ID=\$(docker ps -q --filter 'name=flask-app')
                         if [ -n "\$CONTAINER_ID" ]; then
@@ -43,8 +43,8 @@ pipeline {
                             docker rm \$CONTAINER_ID
                         fi
                     """
-                    // Run the new container
-                    sh "docker run -d -p 5000:5000 ${FULL_IMAGE_NAME}"
+                    // Run the new container with a name
+                    sh "docker run -d -p 5000:5000 --name flask-app ${FULL_IMAGE_NAME}"
                 }
             }
         }
